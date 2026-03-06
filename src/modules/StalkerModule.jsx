@@ -29,6 +29,19 @@ function buildAlertsText(alerts) {
   return out;
 }
 
+function renderVal(v, depth = 0) {
+  const pad = "      " + "  ".repeat(depth);
+  if (v === null || v === undefined) return "null";
+  if (typeof v !== "object") return String(v);
+  if (Array.isArray(v)) {
+    if (!v.length) return "[]";
+    return v.map((item, i) => `\n${pad}[${i}] ${renderVal(item, depth + 1)}`).join("");
+  }
+  const entries = Object.entries(v).filter(([k]) => !["backingStore", "additionalData"].includes(k));
+  if (!entries.length) return "{}";
+  return entries.map(([k, val]) => `\n${pad}${k} : ${renderVal(val, depth + 1)}`).join("");
+}
+
 function buildEntitiesText(alertsWithEvidence) {
   if (!alertsWithEvidence?.length) return "> NO ALERTS FOUND TO EXTRACT ENTITIES.";
   let out = "";
@@ -39,9 +52,9 @@ function buildEntitiesText(alertsWithEvidence) {
         const t = (ev["@odata.type"] || "unknown").replace("#microsoft.graph.security.", "");
         out += `  > ENTITY TYPE: ${t.toUpperCase()}\n`;
         for (const [k, v] of Object.entries(ev)) {
-          if (["@odata.type", "additionalData", "backingStore"].includes(k)) continue;
-          if (v !== null && v !== undefined && typeof v !== "object") {
-            out += `    - ${k} : ${v}\n`;
+          if (["@odata.type", "backingStore", "additionalData"].includes(k)) continue;
+          if (v !== null && v !== undefined) {
+            out += `    - ${k} : ${renderVal(v)}\n`;
           }
         }
       }
@@ -53,7 +66,7 @@ function buildEntitiesText(alertsWithEvidence) {
 }
 
 export default function StalkerModule() {
-  const { getToken, currentUser } = useGraph();
+  const { getToken, currentUser, loadCurrentUser } = useGraph();
   const [incidents, setIncidents] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -88,6 +101,8 @@ export default function StalkerModule() {
       setLoading(false);
     }
   }, [getToken, writeConsole]);
+
+  useEffect(() => { loadCurrentUser(); }, [loadCurrentUser]);
 
   // Auto-refresh every 60s while on this module
   useEffect(() => {
@@ -205,7 +220,7 @@ export default function StalkerModule() {
       </div>
 
       {/* Incidents Table */}
-      <div className="cyber-table-wrap table-red" style={{ flex: 1, minHeight: 0, marginBottom: 0 }}>
+      <div className="cyber-table-wrap table-red" style={{ flex: 2, minHeight: 0, marginBottom: 0 }}>
         <table className="cyber-table">
           <thead>
             <tr>
@@ -283,7 +298,7 @@ export default function StalkerModule() {
       <div
         ref={consoleRef}
         className="console-box console-red"
-        style={{ height: "160px", marginTop: 8 }}
+        style={{ flex: 1, minHeight: 100, marginTop: 8 }}
       >
         {consoleText}
         <span className="cursor"> _</span>

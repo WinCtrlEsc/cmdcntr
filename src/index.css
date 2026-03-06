@@ -451,6 +451,7 @@ body {
   word-break: break-all;
 }
 
+
 .console-box .cursor {
   animation: blink 1s step-start infinite;
   font-weight: bold;
