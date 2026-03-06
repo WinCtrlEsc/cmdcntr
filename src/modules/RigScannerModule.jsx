@@ -63,7 +63,7 @@ export default function RigScannerModule() {
           {/* Intel panel — horizontal stats bar */}
           <div style={{ border: "2px solid var(--neon-magenta)", background: "#11001A", padding: 20, boxShadow: "0 0 10px #E020FF55", flexShrink: 0 }}>
             <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", marginBottom: 14 }}>RIG INTEL</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px 24px", marginBottom: 16 }}>
+            <div className="stats-grid-4">
               {[["OS VERSION", intel.osVersion, "#fff"], ["COMPLIANCE STATE", intel.complianceState, intel.complianceState?.toLowerCase().includes("compliant") ? "var(--neon-green)" : "var(--neon-red)"],
                 ["LAST CHECK-IN", intel.lastCheckIn, "var(--neon-magenta)"], ["PRIMARY USER", intel.primaryUser, "var(--neon-yellow)"]].map(([label, val, color]) => (
                 <div key={label}>
@@ -81,7 +81,7 @@ export default function RigScannerModule() {
           {/* Tactical actions */}
           <div style={{ border: "1px solid #33E020FF", background: "#05000A", padding: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
             <div style={{ color: "var(--neon-magenta)", fontSize: 14, fontWeight: "bold" }}>TACTICAL ACTIONS</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, width: "100%" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%" }}>
               {[["QUICK_SCAN", "[ QUICK AV SCAN ]"], ["FULL_SCAN", "[ FULL AV SCAN ]"], ["DIAGNOSTICS", "[ COLLECT DIAGNOSTICS ]"], ["SYNC", "[ FORCE SYNC ]"]].map(([type, label]) => (
                 <button key={type} className="cyber-btn btn-magenta" style={{ height: 50, width: "100%" }} onClick={() => action(type)}>{label}</button>
               ))}

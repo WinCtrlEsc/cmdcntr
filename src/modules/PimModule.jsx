@@ -112,11 +112,14 @@ export default function PimModule() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr><td colSpan={4} style={{ textAlign: "center", padding: "20px", color: "#555" }}>
-                LOADING...
-              </td></tr>
-            )}
+            {loading && Array.from({ length: 5 }).map((_, i) => (
+              <tr key={`skel-${i}`}>
+                <td><div className="skeleton" style={{ width: 18, height: 16, margin: "0 auto" }} /></td>
+                <td><div className="skeleton" style={{ width: `${50 + (i * 11) % 40}%`, height: 14 }} /></td>
+                <td><div className="skeleton" style={{ width: 110, height: 14 }} /></td>
+                <td><div className="skeleton" style={{ width: 28, height: 14 }} /></td>
+              </tr>
+            ))}
             {!loading && roles.length === 0 && (
               <tr><td colSpan={4} style={{ textAlign: "center", padding: "20px", color: "#555" }}>
                 NO ELIGIBLE ROLES FOUND.

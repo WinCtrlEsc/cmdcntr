@@ -50,7 +50,7 @@ export default function DossierModule() {
         <div className="reveal-panel" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, minHeight: 0, marginBottom: 12 }}>
           {/* ID Card — centered */}
           <div style={{ display: "flex", justifyContent: "center", flexShrink: 0 }}>
-            <div style={{ border: "2px solid var(--neon-blue)", background: "#001122", padding: 20, boxShadow: "0 0 14px #00E5FF55", display: "flex", gap: 24, alignItems: "center" }}>
+            <div className="id-card-inner" style={{ border: "2px solid var(--neon-blue)", background: "#001122", padding: 20, boxShadow: "0 0 14px #00E5FF55", display: "flex", gap: 24, alignItems: "center" }}>
               {dossier.photoUrl && (
                 <img src={dossier.photoUrl} style={{ width: 90, height: 90, objectFit: "cover", border: "2px solid var(--neon-cyan)", borderRadius: 4, flexShrink: 0 }} alt="profile" />
               )}

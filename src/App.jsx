@@ -1,5 +1,5 @@
 // App.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMsal, useIsAuthenticated } from "@azure/msal-react";
 import { loginRequest } from "./authConfig";
 import { useGraph } from "./hooks/useGraph";
@@ -90,6 +90,23 @@ function AppShell() {
   const { loadCurrentUser, currentUser } = useGraph();
   const [activeModule, setActiveModule] = useState("pim");
   const [statusText, setStatusText] = useState("AUTHENTICATING...");
+  const touchStartX = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(deltaX) < 80) return;
+    const ids = MODULES.map((m) => m.id);
+    const idx = ids.indexOf(activeModule);
+    if (idx === -1) return;
+    if (deltaX < 0 && idx < ids.length - 1) setActiveModule(ids[idx + 1]);
+    else if (deltaX > 0 && idx > 0) setActiveModule(ids[idx - 1]);
+  };
 
   useEffect(() => {
     (async () => {
@@ -159,7 +176,7 @@ function AppShell() {
       </nav>
 
       {/* ── Screen ── */}
-      <main className="screen-area">
+      <main className="screen-area" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <div className="scan-sweep" />
         <div className="screen-content">
           {renderModule()}
