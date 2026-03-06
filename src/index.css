@@ -157,7 +157,8 @@ body {
   display: block;
   width: 100%;
   background: var(--bg-dark);
-  border: 1px solid currentColor;
+  border: 1px solid color-mix(in srgb, currentColor 50%, transparent);
+  border-left: 3px solid currentColor;
   padding: 10px 14px;
   margin-bottom: 6px;
   font-family: var(--font-mono);
@@ -165,20 +166,25 @@ body {
   font-weight: bold;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s, box-shadow 0.15s;
-  /* cut-corner clip matching XAML polygon */
-  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+  transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
   position: relative;
+  letter-spacing: 0.04em;
 }
 
 .nav-btn:hover {
-  background: color-mix(in srgb, currentColor 15%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, currentColor 60%, transparent);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  border-color: color-mix(in srgb, currentColor 80%, transparent);
+  border-left-color: currentColor;
+  box-shadow: 0 0 10px color-mix(in srgb, currentColor 40%, transparent),
+              inset 0 0 8px color-mix(in srgb, currentColor 8%, transparent);
 }
 
 .nav-btn.active {
-  background: color-mix(in srgb, currentColor 20%, transparent);
-  box-shadow: 0 0 16px color-mix(in srgb, currentColor 70%, transparent);
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  border-color: color-mix(in srgb, currentColor 90%, transparent);
+  border-left-color: currentColor;
+  box-shadow: 0 0 14px color-mix(in srgb, currentColor 50%, transparent),
+              inset 0 0 12px color-mix(in srgb, currentColor 12%, transparent);
 }
 
 .nav-btn.cyan   { color: var(--neon-cyan); }
@@ -302,26 +308,31 @@ body {
 /* ── Cyber Buttons ───────────────────────────────────── */
 .cyber-btn {
   background: var(--bg-dark);
-  border: 1px solid currentColor;
+  border: 1px solid color-mix(in srgb, currentColor 50%, transparent);
+  border-left: 3px solid currentColor;
   padding: 9px 18px;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.12s, box-shadow 0.12s;
-  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+  transition: background 0.12s, box-shadow 0.12s, border-color 0.12s;
   white-space: nowrap;
   min-height: 38px;
+  letter-spacing: 0.04em;
 }
 
 .cyber-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, currentColor 15%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, currentColor 50%, transparent);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  border-color: color-mix(in srgb, currentColor 80%, transparent);
+  border-left-color: currentColor;
+  box-shadow: 0 0 12px color-mix(in srgb, currentColor 45%, transparent),
+              inset 0 0 8px color-mix(in srgb, currentColor 8%, transparent);
 }
 
 .cyber-btn:disabled {
   color: #444 !important;
   border-color: #333 !important;
+  border-left-color: #444 !important;
   cursor: not-allowed;
 }
 
@@ -609,7 +620,6 @@ body {
     padding: 8px 12px;
     font-size: 11px;
     margin-bottom: 0;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
   }
 
   .screen-area {

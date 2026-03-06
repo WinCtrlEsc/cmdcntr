@@ -47,25 +47,29 @@ export default function DossierModule() {
 
       {/* Dossier reveal */}
       {dossier && (
-        <div className="reveal-panel" style={{ flex: 1, display: "grid", gridTemplateColumns: "280px 1fr", gap: 16, minHeight: 0, marginBottom: 12 }}>
-          {/* ID Card */}
-          <div style={{ border: "2px solid var(--neon-blue)", background: "#001122", padding: 20, boxShadow: "0 0 10px #00E5FF55", overflowY: "auto" }}>
-            <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", textAlign: "center", marginBottom: 14 }}>IDENTITY CONFIRMED</div>
-            {dossier.photoUrl && (
-              <div style={{ textAlign: "center", marginBottom: 14 }}>
-                <img src={dossier.photoUrl} style={{ width: 90, height: 90, objectFit: "cover", border: "2px solid var(--neon-cyan)", borderRadius: 4 }} alt="profile" />
+        <div className="reveal-panel" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, minHeight: 0, marginBottom: 12 }}>
+          {/* ID Card — centered */}
+          <div style={{ display: "flex", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ border: "2px solid var(--neon-blue)", background: "#001122", padding: 20, boxShadow: "0 0 14px #00E5FF55", display: "flex", gap: 24, alignItems: "center" }}>
+              {dossier.photoUrl && (
+                <img src={dossier.photoUrl} style={{ width: 90, height: 90, objectFit: "cover", border: "2px solid var(--neon-cyan)", borderRadius: 4, flexShrink: 0 }} alt="profile" />
+              )}
+              <div>
+                <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", marginBottom: 12 }}>IDENTITY CONFIRMED</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 32px" }}>
+                  {[["NAME", dossier.displayName, "#fff"], ["TITLE", dossier.jobTitle, "var(--neon-blue)"], ["DEPARTMENT", dossier.department, "var(--neon-blue)"], ["REPORTS TO", dossier.managerName, "var(--neon-yellow)"]].map(([label, val, color]) => (
+                    <div key={label}>
+                      <div style={{ color: "#555", fontSize: 10, fontWeight: "bold" }}>{label}</div>
+                      <div style={{ color, fontSize: 14, fontWeight: "bold", wordBreak: "break-word" }}>{val?.toUpperCase()}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
-            {[["NAME", dossier.displayName, "#fff"], ["TITLE", dossier.jobTitle, "var(--neon-blue)"], ["DEPARTMENT", dossier.department, "var(--neon-blue)"], ["REPORTS TO", dossier.managerName, "var(--neon-yellow)"]].map(([label, val, color]) => (
-              <div key={label} style={{ marginBottom: 10 }}>
-                <div style={{ color: "#555", fontSize: 10, fontWeight: "bold" }}>{label}</div>
-                <div style={{ color, fontSize: 15, fontWeight: "bold", wordBreak: "break-word" }}>{val?.toUpperCase()}</div>
-              </div>
-            ))}
+            </div>
           </div>
 
           {/* Groups table */}
-          <div style={{ border: "1px solid #3300E5FF", background: "#00050A", padding: 12, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ border: "1px solid #3300E5FF", background: "#00050A", padding: 12, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <div style={{ color: "var(--neon-blue)", fontSize: 12, fontWeight: "bold", marginBottom: 10 }}>ACTIVE CLEARANCES // GROUPS</div>
             <div className="cyber-table-wrap" style={{ flex: 1 }}>
               <table className="cyber-table">

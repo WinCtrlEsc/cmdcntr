@@ -4,11 +4,15 @@ import { useGraph } from "../hooks/useGraph";
 import { getPimRoles, activatePimRole } from "../services/GraphService";
 
 export default function PimModule() {
-  const { getToken, currentUser } = useGraph();
+  const { getToken, currentUser, loadCurrentUser } = useGraph();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("FETCHING ROLE MATRICES...");
   const [customHours, setCustomHours] = useState("");
+
+  useEffect(() => {
+    loadCurrentUser();
+  }, [loadCurrentUser]);
 
   const loadRoles = useCallback(async () => {
     if (!currentUser?.id) return;

@@ -59,27 +59,29 @@ export default function RigScannerModule() {
       </div>
 
       {intel && (
-        <div className="reveal-panel" style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 16, minHeight: 0, marginBottom: 12 }}>
-          {/* Intel panel */}
-          <div style={{ border: "2px solid var(--neon-magenta)", background: "#11001A", padding: 20, boxShadow: "0 0 10px #E020FF55", overflowY: "auto" }}>
-            <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", textAlign: "center", marginBottom: 14 }}>RIG INTEL</div>
-            {[["OS VERSION", intel.osVersion, "#fff"], ["COMPLIANCE STATE", intel.complianceState, intel.complianceState?.toLowerCase().includes("compliant") ? "var(--neon-green)" : "var(--neon-red)"],
-              ["LAST CHECK-IN", intel.lastCheckIn, "var(--neon-magenta)"], ["PRIMARY USER", intel.primaryUser, "var(--neon-yellow)"]].map(([label, val, color]) => (
-              <div key={label} style={{ marginBottom: 12 }}>
-                <div style={{ color: "#777", fontSize: 10, fontWeight: "bold" }}>{label}</div>
-                <div style={{ color, fontSize: 14, fontWeight: "bold", wordBreak: "break-word" }}>{val?.toUpperCase()}</div>
-              </div>
-            ))}
-            <div style={{ color: "#777", fontSize: 10, fontWeight: "bold" }}>BITLOCKER RECOVERY KEY</div>
-            <div style={{ background: "#0A000A", border: "1px solid #55FF00FF", padding: "6px 8px", color: "#fff", fontSize: 12, wordBreak: "break-all", maxHeight: 60, overflow: "auto" }}>
+        <div className="reveal-panel" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, minHeight: 0, marginBottom: 12 }}>
+          {/* Intel panel — horizontal stats bar */}
+          <div style={{ border: "2px solid var(--neon-magenta)", background: "#11001A", padding: 20, boxShadow: "0 0 10px #E020FF55", flexShrink: 0 }}>
+            <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", marginBottom: 14 }}>RIG INTEL</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px 24px", marginBottom: 16 }}>
+              {[["OS VERSION", intel.osVersion, "#fff"], ["COMPLIANCE STATE", intel.complianceState, intel.complianceState?.toLowerCase().includes("compliant") ? "var(--neon-green)" : "var(--neon-red)"],
+                ["LAST CHECK-IN", intel.lastCheckIn, "var(--neon-magenta)"], ["PRIMARY USER", intel.primaryUser, "var(--neon-yellow)"]].map(([label, val, color]) => (
+                <div key={label}>
+                  <div style={{ color: "#777", fontSize: 10, fontWeight: "bold" }}>{label}</div>
+                  <div style={{ color, fontSize: 13, fontWeight: "bold", wordBreak: "break-word" }}>{val?.toUpperCase()}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ color: "#777", fontSize: 10, fontWeight: "bold", marginBottom: 4 }}>BITLOCKER RECOVERY KEY</div>
+            <div style={{ background: "#0A000A", border: "1px solid #55FF00FF", padding: "6px 8px", color: "#fff", fontSize: 12, wordBreak: "break-all" }}>
               {intel.bitLockerKey}
             </div>
           </div>
 
           {/* Tactical actions */}
-          <div style={{ border: "1px solid #33E020FF", background: "#05000A", padding: 20, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-            <div style={{ color: "var(--neon-magenta)", fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>TACTICAL ACTIONS</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: "100%" }}>
+          <div style={{ border: "1px solid #33E020FF", background: "#05000A", padding: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <div style={{ color: "var(--neon-magenta)", fontSize: 14, fontWeight: "bold" }}>TACTICAL ACTIONS</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, width: "100%" }}>
               {[["QUICK_SCAN", "[ QUICK AV SCAN ]"], ["FULL_SCAN", "[ FULL AV SCAN ]"], ["DIAGNOSTICS", "[ COLLECT DIAGNOSTICS ]"], ["SYNC", "[ FORCE SYNC ]"]].map(([type, label]) => (
                 <button key={type} className="cyber-btn btn-magenta" style={{ height: 50, width: "100%" }} onClick={() => action(type)}>{label}</button>
               ))}
