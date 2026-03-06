@@ -1,7 +1,7 @@
 // main.jsx
 // MSAL is initialised at runtime from localStorage — no credentials in source.
-// If no credentials are stored yet, we render the first-run Settings screen
-// directly (outside of MsalProvider) so the operator can configure the app.
+// If no credentials are stored yet, render the Settings screen directly
+// (outside MsalProvider) so the operator can configure the app.
 // Once saved, the page reloads and MSAL boots with the real values.
 
 import React from "react";
@@ -15,7 +15,6 @@ import "./index.css";
 
 function Root() {
   if (!isConfigured()) {
-    // No credentials stored — show the setup screen standalone, no MSAL needed
     return (
       <div className="app-shell" style={{ alignItems: "stretch" }}>
         <main className="screen-area" style={{ margin: 0, flex: 1 }}>
@@ -23,7 +22,6 @@ function Root() {
           <div className="screen-content">
             <FirstRunSetup
               onSaved={() => {
-                // Reload so MSAL boots with the newly stored values
                 window.location.reload();
               }}
             />
@@ -33,7 +31,6 @@ function Root() {
     );
   }
 
-  // Credentials present — build the MSAL instance from localStorage values
   const msalInstance = new PublicClientApplication(buildMsalConfig());
 
   return (

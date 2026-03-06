@@ -14,6 +14,7 @@ export default function SettingsModule({ onSaved }) {
   const stored = loadStoredConfig();
   const [clientId, setClientId] = useState(stored.clientId);
   const [tenantId, setTenantId] = useState(stored.tenantId);
+  const [loginHint, setLoginHint] = useState(stored.loginHint ?? "");  // NEW: elevated UPN for iOS SSO bypass
   const [saved, setSaved] = useState(false);
   const [showClear, setShowClear] = useState(false);
 
@@ -21,7 +22,7 @@ export default function SettingsModule({ onSaved }) {
 
   const handleSave = () => {
     if (!clientId.trim() || !tenantId.trim()) return;
-    saveStoredConfig({ clientId, tenantId });
+    saveStoredConfig({ clientId, tenantId, loginHint });  // NEW: pass loginHint through
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
     if (onSaved) onSaved();
@@ -31,6 +32,7 @@ export default function SettingsModule({ onSaved }) {
     clearStoredConfig();
     setClientId("");
     setTenantId("");
+    setLoginHint("");  // NEW: clear loginHint on wipe
     setShowClear(false);
     // Force full page reload to re-init MSAL with no config
     window.location.reload();
@@ -154,6 +156,53 @@ export default function SettingsModule({ onSaved }) {
             </div>
           </div>
 
+          {/* NEW: Elevated Identity / Login Hint */}
+          <div style={{ marginBottom: 28 }}>
+            <label
+              style={{
+                display: "block",
+                color: "var(--neon-cyan)",
+                fontSize: 11,
+                fontWeight: "bold",
+                letterSpacing: "0.1em",
+                marginBottom: 8,
+              }}
+            >
+              ELEVATED IDENTITY UPN
+              <span style={{ color: "#555", fontWeight: "normal", marginLeft: 8 }}>(OPTIONAL — iOS SSO BYPASS)</span>
+            </label>
+            <input
+              className="cyber-input"
+              style={{
+                color: "var(--neon-cyan)",
+                borderColor: loginHint ? "var(--neon-cyan)" : "#333",
+                background: "#000A0A",
+                width: "100%",
+                fontSize: 14,
+                letterSpacing: "0.03em",
+              }}
+              value={loginHint}
+              onChange={(e) => { setLoginHint(e.target.value); setSaved(false); }}
+              placeholder="admin@yourorg.com"
+              spellCheck={false}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              type="email"
+            />
+            <div style={{ color: "#444", fontSize: 11, marginTop: 5, lineHeight: 1.5 }}>
+              On managed iPhones, Microsoft Authenticator silently injects your standard account.
+              Enter your <strong style={{ color: "#666" }}>elevated / privileged UPN</strong> here to
+              force Entra to bypass SSO and prompt for that specific identity instead.
+              Leave blank on devices where account selection works normally.
+            </div>
+            {loginHint && (
+              <div style={{ marginTop: 8, color: "var(--neon-green)", fontSize: 11 }}>
+                ✓ iOS SSO OVERRIDE ACTIVE — will authenticate as: {loginHint}
+              </div>
+            )}
+          </div>
+
           {/* Save button */}
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button
@@ -248,7 +297,7 @@ export default function SettingsModule({ onSaved }) {
         fontSize: 12,
       }}>
         {configured
-          ? `> CONFIGURATION LOADED. CLIENT_ID: ${clientId.slice(0,8)}... TENANT_ID: ${tenantId.slice(0,8)}...`
+          ? `> CONFIGURATION LOADED. CLIENT_ID: ${clientId.slice(0,8)}... TENANT_ID: ${tenantId.slice(0,8)}... ${loginHint ? `SSO_BYPASS: ${loginHint}` : "SSO_BYPASS: DISABLED"}`
           : "> AWAITING OPERATOR INPUT. ENTER CLIENT ID AND TENANT ID TO PROCEED."}
         <span className="cursor"> _</span>
       </div>

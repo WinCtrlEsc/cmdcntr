@@ -1,7 +1,7 @@
 // App.jsx
 import { useState, useEffect, useRef } from "react";
 import { useMsal, useIsAuthenticated } from "@azure/msal-react";
-import { loginRequest } from "./authConfig";
+import { buildLoginRequest } from "./authConfig";
 import { useGraph } from "./hooks/useGraph";
 
 import PimModule        from "./modules/PimModule";
@@ -52,7 +52,7 @@ function LoginScreen() {
     setLoading(true);
     setError(null);
     try {
-      await instance.loginRedirect(loginRequest);
+      await instance.loginRedirect(buildLoginRequest());;
     } catch (e) {
       setError(e.message);
       setLoading(false);
