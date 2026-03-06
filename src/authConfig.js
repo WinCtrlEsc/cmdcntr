@@ -45,8 +45,8 @@ export function buildMsalConfig() {
     auth: {
       clientId,
       authority: `https://login.microsoftonline.com/${tenantId}`,
-      redirectUri: window.location.origin,
-      postLogoutRedirectUri: window.location.origin,
+      redirectUri: window.location.origin + window.location.pathname,
+      postLogoutRedirectUri: window.location.origin + window.location.pathname,
     },
     cache: {
       cacheLocation: "localStorage",   // localStorage so PWA survives tab close
