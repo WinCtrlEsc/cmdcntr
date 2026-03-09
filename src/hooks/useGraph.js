@@ -3,6 +3,7 @@
 
 import { useState, useCallback } from "react";
 import { useMsal } from "@azure/msal-react";
+import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { loginRequest } from "../authConfig";
 import { getMe } from "../services/GraphService";
 
@@ -13,11 +14,17 @@ export function useGraph() {
   const getToken = useCallback(async () => {
     const account = accounts[0];
     if (!account) throw new Error("No authenticated account.");
-    const result = await instance.acquireTokenSilent({
-      ...loginRequest,
-      account,
-    });
-    return result.accessToken;
+    try {
+      const result = await instance.acquireTokenSilent({ ...loginRequest, account });
+      return result.accessToken;
+    } catch (e) {
+      if (e instanceof InteractionRequiredAuthError) {
+        // Refresh token expired or consent required — redirect to re-authenticate
+        await instance.acquireTokenRedirect({ ...loginRequest, account });
+        // acquireTokenRedirect navigates away; execution stops here
+      }
+      throw e;
+    }
   }, [instance, accounts]);
 
   const loadCurrentUser = useCallback(async () => {
