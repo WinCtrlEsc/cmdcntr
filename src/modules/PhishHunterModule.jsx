@@ -84,9 +84,9 @@ export default function PhishHunterModule() {
       </div>
 
       {results && (
-        <div className="reveal-panel" style={{ flex: 1, display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, minHeight: 0, marginBottom: 12 }}>
+        <div className="reveal-panel" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, minHeight: 0, marginBottom: 12 }}>
           {/* Blast radius table */}
-          <div style={{ border: "2px solid var(--acid-green)", background: "#051505", padding: 12, boxShadow: "0 0 10px #39FF1455", display: "flex", flexDirection: "column" }}>
+          <div style={{ border: "2px solid var(--acid-green)", background: "#051505", padding: 12, boxShadow: "0 0 10px #39FF1455", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
             <div style={{ color: "var(--acid-green)", fontSize: 11, fontWeight: "bold", marginBottom: 10 }}>BLAST RADIUS [RECIPIENTS]</div>
             <div className="cyber-table-wrap table-acid" style={{ flex: 1 }}>
               <table className="cyber-table">
@@ -105,11 +105,11 @@ export default function PhishHunterModule() {
           </div>
 
           {/* Tactical actions */}
-          <div style={{ border: "1px solid #33FF6600", background: "#110500", padding: 20, display: "flex", flexDirection: "column", gap: 12, justifyContent: "center" }}>
-            <div style={{ color: "var(--neon-orange)", fontSize: 14, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>TACTICAL ACTIONS</div>
-            <button className="cyber-btn btn-orange" style={{ height: 50 }} onClick={extractUrls}>[ EXTRACT URLs ]</button>
-            <button className="cyber-btn btn-red" style={{ height: 50 }} onClick={report}>[ REPORT MALICIOUS ]</button>
-            <button className="cyber-btn btn-red" style={{ height: 50 }} onClick={purge}>[ PURGE THREAT ]</button>
+          <div style={{ border: "1px solid #33FF6600", background: "#110500", padding: 16, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
+            <div style={{ color: "var(--neon-orange)", fontSize: 13, fontWeight: "bold", marginRight: 4 }}>TACTICAL ACTIONS //</div>
+            <button className="cyber-btn btn-orange" onClick={extractUrls} disabled={!selectedRow}>[ EXTRACT URLs ]</button>
+            <button className="cyber-btn btn-red" onClick={report} disabled={!selectedRow}>[ REPORT MALICIOUS ]</button>
+            <button className="cyber-btn btn-red" onClick={purge} disabled={!selectedRow}>[ PURGE THREAT ]</button>
           </div>
         </div>
       )}

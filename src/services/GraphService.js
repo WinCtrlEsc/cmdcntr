@@ -4,10 +4,11 @@
 // All Graph API endpoints are identical; only the client differs.
 // ============================================================
 
-const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
+const GRAPH_BASE      = "https://graph.microsoft.com/v1.0";
+const GRAPH_BASE_BETA = "https://graph.microsoft.com/beta";
 
-async function graphFetch(accessToken, path, options = {}) {
-  const res = await fetch(`${GRAPH_BASE}${path}`, {
+async function graphFetch(accessToken, path, options = {}, base = GRAPH_BASE) {
+  const res = await fetch(`${base}${path}`, {
     ...options,
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -23,6 +24,9 @@ async function graphFetch(accessToken, path, options = {}) {
   if (res.status === 204) return null;
   return res.json();
 }
+
+const graphFetchBeta = (accessToken, path, options = {}) =>
+  graphFetch(accessToken, path, options, GRAPH_BASE_BETA);
 
 // ─── ME ──────────────────────────────────────────────────────────────────────
 
@@ -251,9 +255,9 @@ export async function getAuthLogs(token, alias) {
 // ─── RIG SCANNER ─────────────────────────────────────────────────────────────
 
 export async function getRigIntel(token, hostname) {
-  const devRes = await graphFetch(
+  const devRes = await graphFetchBeta(
     token,
-    `/deviceManagement/managedDevices?$filter=deviceName eq '${hostname}'`
+    `/deviceManagement/managedDevices?$select=id,deviceName,azureADDeviceId,osVersion,complianceState,lastSyncDateTime,userPrincipalName&$filter=deviceName eq '${hostname}'&$top=1`
   );
   const device = devRes?.value?.[0];
   if (!device) return null;
@@ -296,18 +300,21 @@ export async function executeRigAction(token, managedDeviceId, actionType) {
   const base = `/deviceManagement/managedDevices/${managedDeviceId}`;
   switch (actionType) {
     case "QUICK_SCAN":
-      await graphFetch(token, `${base}/windowsDefenderScan`, { method: "POST", body: JSON.stringify({ quickScan: true }) });
+      await graphFetchBeta(token, `${base}/windowsDefenderScan`, { method: "POST", body: JSON.stringify({ quickScan: true }) });
       return "Quick AV Scan initiated on target.";
     case "FULL_SCAN":
-      await graphFetch(token, `${base}/windowsDefenderScan`, { method: "POST", body: JSON.stringify({ quickScan: false }) });
+      await graphFetchBeta(token, `${base}/windowsDefenderScan`, { method: "POST", body: JSON.stringify({ quickScan: false }) });
       return "Full System AV Scan initiated on target.";
     case "SYNC":
-      await graphFetch(token, `${base}/syncDevice`, { method: "POST", body: "{}" });
+      await graphFetchBeta(token, `${base}/syncDevice`, { method: "POST", body: "{}" });
       return "Force Sync signal transmitted to target.";
     case "DIAGNOSTICS":
-      await graphFetch(token, `${base}/createDeviceLogCollectionRequest`, {
+      await graphFetchBeta(token, `${base}/createDeviceLogCollectionRequest`, {
         method: "POST",
-        body: JSON.stringify({ templateType: "predefined" }),
+        body: JSON.stringify({
+          "@odata.type": "#microsoft.graph.deviceLogCollectionRequest",
+          templateType: "predefined",
+        }),
       });
       return "Diagnostics log collection requested. Check Intune console for payload later.";
     default:
