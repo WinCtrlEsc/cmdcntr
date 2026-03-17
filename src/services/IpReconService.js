@@ -1,37 +1,34 @@
 // IpReconService.js
-// Geo lookup via ip-api.com (free, HTTPS, CORS-enabled, no key required)
+// Geo lookup via ipwho.is (free, HTTPS, CORS-enabled, no key required)
 // Threat intel via AbuseIPDB v2 API (key stored in localStorage)
 
 import { STORAGE_KEY_ABUSEIPDB } from "../authConfig";
 
 export async function traceIp(ip, log) {
   // ── GEO LOOKUP ──────────────────────────────────────────────────────────────
-  // ip-api.com: free, CORS-enabled, returns JSON with all needed fields
-  const geoRes = await fetch(
-    `https://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,message,country,countryCode,regionName,city,lat,lon,timezone,isp,org,as`
-  );
+  // ipwho.is: free, HTTPS, CORS-enabled, no key required
+  const geoRes = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
   if (!geoRes.ok) throw new Error(`GEO API error ${geoRes.status}`);
   const geo = await geoRes.json();
-  if (geo.status === "fail") throw new Error(`GEO lookup failed: ${geo.message ?? "unknown error"}`);
+  if (!geo.success) throw new Error(`GEO lookup failed: ${geo.message ?? "unknown error"}`);
 
   log("> GEO DATA ACQUIRED.");
 
-  // "as" field is "AS22773 Cox Communications Inc." — split off the ASN number for clean display
-  const asFull   = geo.as ?? "UNKNOWN";
-  const ispClean = geo.isp ?? geo.org ?? "UNKNOWN";
+  const ispClean = geo.connection?.isp ?? geo.connection?.org ?? "UNKNOWN";
+  const asnFull  = geo.connection?.asn ? `AS${geo.connection.asn} ${geo.connection.org ?? ""}`.trim() : "UNKNOWN";
 
   const geoData = {
-    ip:          ip,
+    ip:          geo.ip,
     country:     geo.country,
-    countryCode: geo.countryCode,
-    region:      geo.regionName,
+    countryCode: geo.country_code,
+    region:      geo.region,
     city:        geo.city,
-    lat:         geo.lat,
-    lon:         geo.lon,
-    timezone:    geo.timezone ?? "UNKNOWN",
+    lat:         geo.latitude,
+    lon:         geo.longitude,
+    timezone:    geo.timezone?.id ?? "UNKNOWN",
     isp:         ispClean,
-    org:         geo.org ?? ispClean,
-    asn:         asFull,
+    org:         geo.connection?.org ?? ispClean,
+    asn:         asnFull,
   };
 
   // ── ABUSEIPDB THREAT INTEL ───────────────────────────────────────────────────
