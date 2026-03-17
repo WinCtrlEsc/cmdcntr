@@ -9,7 +9,6 @@
 export const STORAGE_KEY_CLIENT_ID    = "cc_client_id";
 export const STORAGE_KEY_TENANT_ID    = "cc_tenant_id";
 export const STORAGE_KEY_LOGIN_HINT   = "cc_login_hint";
-export const STORAGE_KEY_ABUSEIPDB    = "cc_abuseipdb_key";
 export const STORAGE_KEY_IPGEO        = "cc_ipgeo_key";
 
 /** Read saved credentials from localStorage */
@@ -18,24 +17,18 @@ export function loadStoredConfig() {
     clientId:     localStorage.getItem(STORAGE_KEY_CLIENT_ID)  ?? "",
     tenantId:     localStorage.getItem(STORAGE_KEY_TENANT_ID)  ?? "",
     loginHint:    localStorage.getItem(STORAGE_KEY_LOGIN_HINT) ?? "",
-    abuseIpDbKey: localStorage.getItem(STORAGE_KEY_ABUSEIPDB)  ?? "",
-    ipGeoKey:     localStorage.getItem(STORAGE_KEY_IPGEO)       ?? "",
+    ipGeoKey:     localStorage.getItem(STORAGE_KEY_IPGEO) ?? "",
   };
 }
 
 /** Persist credentials to localStorage */
-export function saveStoredConfig({ clientId, tenantId, loginHint = "", abuseIpDbKey = "", ipGeoKey = "" }) {
+export function saveStoredConfig({ clientId, tenantId, loginHint = "", ipGeoKey = "" }) {
   localStorage.setItem(STORAGE_KEY_CLIENT_ID, clientId.trim());
   localStorage.setItem(STORAGE_KEY_TENANT_ID, tenantId.trim());
   if (loginHint.trim()) {
     localStorage.setItem(STORAGE_KEY_LOGIN_HINT, loginHint.trim());
   } else {
     localStorage.removeItem(STORAGE_KEY_LOGIN_HINT);
-  }
-  if (abuseIpDbKey.trim()) {
-    localStorage.setItem(STORAGE_KEY_ABUSEIPDB, abuseIpDbKey.trim());
-  } else {
-    localStorage.removeItem(STORAGE_KEY_ABUSEIPDB);
   }
   if (ipGeoKey.trim()) {
     localStorage.setItem(STORAGE_KEY_IPGEO, ipGeoKey.trim());
@@ -49,7 +42,6 @@ export function clearStoredConfig() {
   localStorage.removeItem(STORAGE_KEY_CLIENT_ID);
   localStorage.removeItem(STORAGE_KEY_TENANT_ID);
   localStorage.removeItem(STORAGE_KEY_LOGIN_HINT);
-  localStorage.removeItem(STORAGE_KEY_ABUSEIPDB);
   localStorage.removeItem(STORAGE_KEY_IPGEO);
 }
 

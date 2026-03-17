@@ -2,18 +2,6 @@
 import { useState, useRef } from "react";
 import { traceIp } from "../services/IpReconService";
 
-function scoreColor(score) {
-  if (score > 50) return "var(--neon-red)";
-  if (score > 20) return "var(--neon-yellow)";
-  return "var(--neon-green)";
-}
-
-function scoreGlow(score) {
-  if (score > 50) return "0 0 16px #FF111188";
-  if (score > 20) return "0 0 16px #FFE60088";
-  return "0 0 16px #00FF4188";
-}
-
 export default function IpReconModule() {
   const [ip, setIp] = useState("");
   const [result, setResult] = useState(null);
@@ -49,10 +37,6 @@ export default function IpReconModule() {
     setConsoleText("> TELEMETRY CLEARED. AWAITING NEXT TARGET...");
   };
 
-  const lastReported = result?.abuse.lastReportedAt
-    ? new Date(result.abuse.lastReportedAt).toLocaleDateString("en-US")
-    : "NEVER";
-
   return (
     <div className="module-view">
       <div className="module-header">
@@ -79,75 +63,28 @@ export default function IpReconModule() {
         <button className="cyber-btn btn-pink" onClick={reset} disabled={loading}>[ RESET ]</button>
       </div>
 
-      {/* Results — two panel layout matching WPF version */}
+      {/* Results */}
       {result && (
-        <div className="reveal-panel" style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, minHeight: 0, marginBottom: 12 }}>
-
-          {/* GEO LOCATION DATA */}
-          <div style={{ border: "2px solid var(--neon-pink)", background: "#110011", padding: 20, boxShadow: "0 0 12px #FF00AA44", overflowY: "auto" }}>
+        <div className="reveal-panel" style={{ flex: 1, display: "flex", justifyContent: "center", minHeight: 0, marginBottom: 12 }}>
+          <div style={{ border: "2px solid var(--neon-pink)", background: "#110011", padding: 20, boxShadow: "0 0 12px #FF00AA44", overflowY: "auto", width: "100%", maxWidth: 480 }}>
             <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", textAlign: "center", marginBottom: 16, letterSpacing: "0.1em" }}>
               GEO LOCATION DATA
             </div>
             {[
-              ["IP ADDRESS",     result.geo.ip,                                        "#fff"],
-              ["COUNTRY",        `${result.geo.country} [${result.geo.countryCode}]`,  "var(--neon-pink)"],
-              ["REGION / CITY",  `${result.geo.region} / ${result.geo.city}`,          "var(--neon-pink)"],
-              ["COORDINATES",    `${result.geo.lat}, ${result.geo.lon}`,               "var(--neon-pink)"],
-              ["TIMEZONE",       result.geo.timezone,                                   "var(--neon-pink)"],
-              ["ISP",            result.geo.isp,                                        "var(--neon-pink)"],
-              ["ORG",            result.geo.org,                                        "var(--neon-pink)"],
-              ["ASN",            result.geo.asn,                                        "var(--neon-pink)"],
+              ["IP ADDRESS",    result.ip,                                       "#fff"],
+              ["COUNTRY",       `${result.country} [${result.countryCode}]`,    "var(--neon-pink)"],
+              ["REGION / CITY", `${result.region} / ${result.city}`,            "var(--neon-pink)"],
+              ["COORDINATES",   `${result.lat}, ${result.lon}`,                 "var(--neon-pink)"],
+              ["TIMEZONE",      result.timezone,                                  "var(--neon-pink)"],
+              ["ISP",           result.isp,                                       "var(--neon-pink)"],
+              ["ORG",           result.org,                                       "var(--neon-pink)"],
+              ["ASN",           result.asn,                                       "var(--neon-pink)"],
             ].map(([label, val, color]) => (
               <div key={label} style={{ marginBottom: 12 }}>
                 <div style={{ color: "#555", fontSize: 10, fontWeight: "bold", letterSpacing: "0.08em" }}>{label}</div>
                 <div style={{ color, fontSize: 14, fontWeight: "bold", wordBreak: "break-word" }}>{val ?? "UNKNOWN"}</div>
               </div>
             ))}
-          </div>
-
-          {/* ABUSEIPDB THREAT INTEL */}
-          <div style={{ border: "1px solid #FF00AA44", background: "#0A0005", padding: 20, display: "flex", flexDirection: "column", overflowY: "auto" }}>
-            <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", textAlign: "center", marginBottom: 16, letterSpacing: "0.1em" }}>
-              ABUSEIPDB THREAT INTEL
-            </div>
-
-            {/* Big score */}
-            <div style={{ textAlign: "center", marginBottom: 20 }}>
-              <div style={{ color: "#555", fontSize: 10, fontWeight: "bold", letterSpacing: "0.08em", marginBottom: 6 }}>
-                ABUSE CONFIDENCE SCORE
-              </div>
-              <div style={{
-                fontSize: 52,
-                fontWeight: 700,
-                fontFamily: "var(--font-hud)",
-                color: scoreColor(result.abuse.score),
-                textShadow: scoreGlow(result.abuse.score),
-                lineHeight: 1,
-              }}>
-                {result.abuse.score}%
-              </div>
-            </div>
-
-            {result.abuse.error ? (
-              <div style={{ color: "var(--neon-yellow)", fontSize: 12, textAlign: "center" }}>
-                {result.abuse.error}
-              </div>
-            ) : (
-              <>
-                {[
-                  ["TOTAL ABUSE REPORTS",  String(result.abuse.totalReports),     result.abuse.totalReports     > 0 ? "var(--neon-red)"    : "var(--neon-green)"],
-                  ["DISTINCT REPORTERS",   String(result.abuse.numDistinctUsers), result.abuse.numDistinctUsers > 0 ? "var(--neon-yellow)" : "var(--neon-green)"],
-                  ["USAGE TYPE",           result.abuse.usageType,                "#fff"],
-                  ["DOMAIN",               result.abuse.domain,                   "var(--neon-cyan)"],
-                  ["LAST REPORTED",        lastReported,                           result.abuse.lastReportedAt ? "var(--neon-red)" : "var(--neon-green)"],
-                ].map(([label, val, color]) => (
-                  <div key={label} style={{ marginBottom: 12 }}>
-                    <div style={{ color: "#555", fontSize: 10, fontWeight: "bold", letterSpacing: "0.08em" }}>{label}</div>
-                    <div style={{ color, fontSize: 14, fontWeight: "bold", wordBreak: "break-word" }}>{val}</div>
-                  </div>
-                ))}
-              </>
-            )}
           </div>
         </div>
       )}

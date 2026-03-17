@@ -15,7 +15,6 @@ export default function SettingsModule({ onSaved }) {
   const [clientId, setClientId] = useState(stored.clientId);
   const [tenantId, setTenantId] = useState(stored.tenantId);
   const [loginHint, setLoginHint] = useState(stored.loginHint ?? "");
-  const [abuseIpDbKey, setAbuseIpDbKey] = useState(stored.abuseIpDbKey ?? "");
   const [ipGeoKey, setIpGeoKey] = useState(stored.ipGeoKey ?? "");
   const [saved, setSaved] = useState(false);
   const [showWipe, setShowWipe] = useState(false);
@@ -25,7 +24,7 @@ export default function SettingsModule({ onSaved }) {
 
   const handleSave = () => {
     if (!clientId.trim() || !tenantId.trim()) return;
-    saveStoredConfig({ clientId, tenantId, loginHint, abuseIpDbKey, ipGeoKey });
+    saveStoredConfig({ clientId, tenantId, loginHint, ipGeoKey });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
     if (onSaved) onSaved();
@@ -36,7 +35,6 @@ export default function SettingsModule({ onSaved }) {
     setClientId("");
     setTenantId("");
     setLoginHint("");
-    setAbuseIpDbKey("");
     setIpGeoKey("");
     setShowWipe(false);
     window.location.reload();
@@ -263,32 +261,6 @@ export default function SettingsModule({ onSaved }) {
             )}
           </div>
 
-          {/* AbuseIPDB API Key */}
-          <div style={{ marginBottom: 28 }}>
-            <label style={{ display: "block", color: "var(--neon-pink)", fontSize: 11, fontWeight: "bold", letterSpacing: "0.1em", marginBottom: 8 }}>
-              ABUSEIPDB API KEY
-              <span style={{ color: "#555", fontWeight: "normal", marginLeft: 8 }}>(REQUIRED FOR IP RECON MODULE)</span>
-            </label>
-            <input
-              className="cyber-input"
-              style={{ color: "var(--neon-pink)", borderColor: abuseIpDbKey ? "var(--neon-pink)" : "#333", background: "#110005", width: "100%", fontSize: 13, letterSpacing: "0.03em" }}
-              value={abuseIpDbKey}
-              onChange={(e) => { setAbuseIpDbKey(e.target.value); setSaved(false); }}
-              placeholder="paste your AbuseIPDB API key..."
-              spellCheck={false}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-            />
-            <div style={{ color: "#444", fontSize: 11, marginTop: 5 }}>
-              Found at abuseipdb.com → Account → API → Keys. Stored only on this device.
-            </div>
-            {abuseIpDbKey && (
-              <div style={{ marginTop: 8, color: "var(--neon-green)", fontSize: 11 }}>
-                ✓ ABUSEIPDB KEY STORED — IP RECON THREAT INTEL ENABLED
-              </div>
-            )}
-          </div>
 
           {/* Save button */}
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
