@@ -52,30 +52,35 @@ export async function traceIp(ip, log) {
     abuseData.error = "NO API KEY — configure in Settings.";
     log("> [!] ABUSEIPDB KEY NOT CONFIGURED. SKIPPING THREAT INTEL.");
   } else {
-    // AbuseIPDB does not send CORS headers, so browser fetch is blocked.
-    // Route through corsproxy.io (?url= format) which forwards all request headers to the target.
-    const targetUrl = `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`;
-    const proxyUrl  = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
+    try {
+      // AbuseIPDB does not send CORS headers, so browser fetch is blocked.
+      // Route through corsproxy.io (?url= format) which forwards all request headers to the target.
+      const targetUrl = `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`;
+      const proxyUrl  = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
 
-    const abuseRes = await fetch(proxyUrl, {
-      headers: { Key: apiKey, Accept: "application/json" },
-    });
-    if (!abuseRes.ok) {
-      const errText = await abuseRes.text();
-      abuseData.error = `AbuseIPDB error ${abuseRes.status}`;
-      log(`> [!] ABUSEIPDB ERROR ${abuseRes.status}: ${errText}`);
-    } else {
-      const json = await abuseRes.json();
-      const d = json.data;
-      abuseData = {
-        score:            d.abuseConfidenceScore  ?? 0,
-        totalReports:     d.totalReports          ?? 0,
-        numDistinctUsers: d.numDistinctUsers       ?? 0,
-        usageType:        d.usageType             ?? "UNKNOWN",
-        domain:           d.domain                ?? "UNKNOWN",
-        lastReportedAt:   d.lastReportedAt        ?? null,
-        error:            null,
-      };
+      const abuseRes = await fetch(proxyUrl, {
+        headers: { Key: apiKey, Accept: "application/json" },
+      });
+      if (!abuseRes.ok) {
+        const errText = await abuseRes.text();
+        abuseData.error = `AbuseIPDB error ${abuseRes.status}`;
+        log(`> [!] ABUSEIPDB ERROR ${abuseRes.status}: ${errText}`);
+      } else {
+        const json = await abuseRes.json();
+        const d = json.data;
+        abuseData = {
+          score:            d.abuseConfidenceScore  ?? 0,
+          totalReports:     d.totalReports          ?? 0,
+          numDistinctUsers: d.numDistinctUsers       ?? 0,
+          usageType:        d.usageType             ?? "UNKNOWN",
+          domain:           d.domain                ?? "UNKNOWN",
+          lastReportedAt:   d.lastReportedAt        ?? null,
+          error:            null,
+        };
+      }
+    } catch (e) {
+      abuseData.error = `THREAT INTEL UNAVAILABLE — ${e.message}`;
+      log(`> [!] ABUSEIPDB UNREACHABLE: ${e.message}`);
     }
   }
 
