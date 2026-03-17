@@ -87,8 +87,10 @@ export default function SettingsModule({ onSaved }) {
         style={{
           flex: 1,
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "center",
+          overflowY: "auto",
+          padding: "8px 0",
         }}
       >
         <div style={{ width: "100%", maxWidth: 560 }}>
