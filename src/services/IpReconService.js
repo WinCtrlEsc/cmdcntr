@@ -1,34 +1,37 @@
 // IpReconService.js
-// Geo lookup via ipapi.co (free, HTTPS, CORS-enabled, no key required)
+// Geo lookup via ip-api.com (free, HTTPS, CORS-enabled, no key required)
 // Threat intel via AbuseIPDB v2 API (key stored in localStorage)
 
 import { STORAGE_KEY_ABUSEIPDB } from "../authConfig";
 
 export async function traceIp(ip, log) {
   // ── GEO LOOKUP ──────────────────────────────────────────────────────────────
-  const geoRes = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`);
+  // ip-api.com: free, CORS-enabled, returns JSON with all needed fields
+  const geoRes = await fetch(
+    `https://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,message,country,countryCode,regionName,city,lat,lon,timezone,isp,org,as`
+  );
   if (!geoRes.ok) throw new Error(`GEO API error ${geoRes.status}`);
   const geo = await geoRes.json();
-  if (geo.error) throw new Error(`GEO lookup failed: ${geo.reason ?? "unknown error"}`);
+  if (geo.status === "fail") throw new Error(`GEO lookup failed: ${geo.message ?? "unknown error"}`);
 
   log("> GEO DATA ACQUIRED.");
 
-  // org field is "AS22773 Cox Communications Inc." — split off the ASN prefix for cleaner display
-  const orgFull  = geo.org ?? "UNKNOWN";
-  const ispClean = orgFull.replace(/^AS\d+\s*/, "") || orgFull;
+  // "as" field is "AS22773 Cox Communications Inc." — split off the ASN number for clean display
+  const asFull   = geo.as ?? "UNKNOWN";
+  const ispClean = geo.isp ?? geo.org ?? "UNKNOWN";
 
   const geoData = {
-    ip:          geo.ip,
-    country:     geo.country_name,
-    countryCode: geo.country,
-    region:      geo.region,
+    ip:          ip,
+    country:     geo.country,
+    countryCode: geo.countryCode,
+    region:      geo.regionName,
     city:        geo.city,
-    lat:         geo.latitude,
-    lon:         geo.longitude,
+    lat:         geo.lat,
+    lon:         geo.lon,
     timezone:    geo.timezone ?? "UNKNOWN",
     isp:         ispClean,
-    org:         ispClean,
-    asn:         geo.asn ?? orgFull,
+    org:         geo.org ?? ispClean,
+    asn:         asFull,
   };
 
   // ── ABUSEIPDB THREAT INTEL ───────────────────────────────────────────────────
@@ -49,10 +52,14 @@ export async function traceIp(ip, log) {
     abuseData.error = "NO API KEY — configure in Settings.";
     log("> [!] ABUSEIPDB KEY NOT CONFIGURED. SKIPPING THREAT INTEL.");
   } else {
-    const abuseRes = await fetch(
-      `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`,
-      { headers: { Key: apiKey, Accept: "application/json" } }
-    );
+    // AbuseIPDB does not send CORS headers, so browser fetch is blocked.
+    // Route through corsproxy.io (?url= format) which forwards all request headers to the target.
+    const targetUrl = `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`;
+    const proxyUrl  = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
+
+    const abuseRes = await fetch(proxyUrl, {
+      headers: { Key: apiKey, Accept: "application/json" },
+    });
     if (!abuseRes.ok) {
       const errText = await abuseRes.text();
       abuseData.error = `AbuseIPDB error ${abuseRes.status}`;
