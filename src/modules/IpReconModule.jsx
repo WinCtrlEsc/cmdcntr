@@ -32,7 +32,7 @@ export default function IpReconModule() {
     if (!ip.trim()) { setConsoleText("[!] INVALID TARGET: IP ADDRESS CANNOT BE EMPTY."); return; }
     setResult(null);
     setLoading(true);
-    setConsoleText(`> INITIATING TRACE ON ${ip.trim()}...\n> QUERYING GEO DATABASE [ipwho.is]...`);
+    setConsoleText(`> INITIATING TRACE ON ${ip.trim()}...\n> QUERYING GEO DATABASE [ipapi.co]...`);
     try {
       const data = await traceIp(ip.trim(), append);
       setResult(data);

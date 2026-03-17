@@ -1,30 +1,34 @@
 // IpReconService.js
-// Geo lookup via ipwho.is (free, HTTPS, CORS-enabled, no key required)
+// Geo lookup via ipapi.co (free, HTTPS, CORS-enabled, no key required)
 // Threat intel via AbuseIPDB v2 API (key stored in localStorage)
 
 import { STORAGE_KEY_ABUSEIPDB } from "../authConfig";
 
 export async function traceIp(ip, log) {
   // ── GEO LOOKUP ──────────────────────────────────────────────────────────────
-  const geoRes = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
+  const geoRes = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`);
   if (!geoRes.ok) throw new Error(`GEO API error ${geoRes.status}`);
   const geo = await geoRes.json();
-  if (!geo.success) throw new Error(`GEO lookup failed: ${geo.message ?? "unknown error"}`);
+  if (geo.error) throw new Error(`GEO lookup failed: ${geo.reason ?? "unknown error"}`);
 
   log("> GEO DATA ACQUIRED.");
 
+  // org field is "AS22773 Cox Communications Inc." — split off the ASN prefix for cleaner display
+  const orgFull  = geo.org ?? "UNKNOWN";
+  const ispClean = orgFull.replace(/^AS\d+\s*/, "") || orgFull;
+
   const geoData = {
     ip:          geo.ip,
-    country:     geo.country,
-    countryCode: geo.country_code,
+    country:     geo.country_name,
+    countryCode: geo.country,
     region:      geo.region,
     city:        geo.city,
     lat:         geo.latitude,
     lon:         geo.longitude,
-    timezone:    geo.timezone?.id ?? "UNKNOWN",
-    isp:         geo.connection?.isp ?? "UNKNOWN",
-    org:         geo.connection?.org ?? "UNKNOWN",
-    asn:         geo.connection?.asn ? `AS${geo.connection.asn} ${geo.connection.org}` : "UNKNOWN",
+    timezone:    geo.timezone ?? "UNKNOWN",
+    isp:         ispClean,
+    org:         ispClean,
+    asn:         geo.asn ?? orgFull,
   };
 
   // ── ABUSEIPDB THREAT INTEL ───────────────────────────────────────────────────
