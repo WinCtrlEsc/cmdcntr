@@ -1,32 +1,30 @@
 // IpReconService.js
-// Geo lookup via ip-api.com (free, HTTPS, CORS-enabled)
+// Geo lookup via ipwho.is (free, HTTPS, CORS-enabled, no key required)
 // Threat intel via AbuseIPDB v2 API (key stored in localStorage)
 
 import { STORAGE_KEY_ABUSEIPDB } from "../authConfig";
 
 export async function traceIp(ip, log) {
   // ── GEO LOOKUP ──────────────────────────────────────────────────────────────
-  const geoRes = await fetch(
-    `https://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,isp,org,as,query`
-  );
+  const geoRes = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
   if (!geoRes.ok) throw new Error(`GEO API error ${geoRes.status}`);
   const geo = await geoRes.json();
-  if (geo.status !== "success") throw new Error(`GEO lookup failed: ${geo.message ?? "unknown error"}`);
+  if (!geo.success) throw new Error(`GEO lookup failed: ${geo.message ?? "unknown error"}`);
 
   log("> GEO DATA ACQUIRED.");
 
   const geoData = {
-    ip:          geo.query,
+    ip:          geo.ip,
     country:     geo.country,
-    countryCode: geo.countryCode,
-    region:      geo.regionName,
+    countryCode: geo.country_code,
+    region:      geo.region,
     city:        geo.city,
-    lat:         geo.lat,
-    lon:         geo.lon,
-    timezone:    geo.timezone,
-    isp:         geo.isp,
-    org:         geo.org,
-    asn:         geo.as,
+    lat:         geo.latitude,
+    lon:         geo.longitude,
+    timezone:    geo.timezone?.id ?? "UNKNOWN",
+    isp:         geo.connection?.isp ?? "UNKNOWN",
+    org:         geo.connection?.org ?? "UNKNOWN",
+    asn:         geo.connection?.asn ? `AS${geo.connection.asn} ${geo.connection.org}` : "UNKNOWN",
   };
 
   // ── ABUSEIPDB THREAT INTEL ───────────────────────────────────────────────────
