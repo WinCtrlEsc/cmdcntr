@@ -11,6 +11,7 @@ import DossierModule    from "./modules/DossierModule";
 import AuthTracerModule from "./modules/AuthTracerModule";
 import RigScannerModule from "./modules/RigScannerModule";
 import PhishHunterModule from "./modules/PhishHunterModule";
+import IpReconModule    from "./modules/IpReconModule";
 import SettingsModule   from "./modules/SettingsModule";
 
 const MODULES = [
@@ -21,6 +22,8 @@ const MODULES = [
   { id: "auth",      label: "[ AUTH TRACER ]",    color: "orange" },
   { id: "rig",       label: "[ RIG SCANNER ]",    color: "magenta"},
   { id: "phish",     label: "[ PHISH HUNTER ]",   color: "acid"   },
+  { id: "iprecon",   label: "[ IP RECON ]",        color: "pink"   },
+  { id: "settings",  label: "[ SETTINGS ]",        color: "purple" },
 ];
 
 // Cyberpunk hex logo SVG
@@ -128,6 +131,7 @@ function AppShell() {
       case "auth":     return <AuthTracerModule />;
       case "rig":      return <RigScannerModule />;
       case "phish":    return <PhishHunterModule />;
+      case "iprecon":  return <IpReconModule />;
       case "settings": return <SettingsModule onSaved={() => window.location.reload()} />;
       default:         return <PimModule />;
     }
@@ -155,15 +159,6 @@ function AppShell() {
         ))}
 
         <div className="status-bar">
-          {/* Settings sits just above the status/disconnect section */}
-          <button
-            className={`nav-btn${activeModule === "settings" ? " active" : ""}`}
-            style={{ color: "var(--neon-purple)", borderColor: "var(--neon-purple)", marginBottom: 10 }}
-            onClick={() => setActiveModule("settings")}
-          >
-            [ SETTINGS ]
-          </button>
-
           <div className="status-text">STATUS: {statusText}</div>
           <button
             className="nav-btn dim"

@@ -14,28 +14,57 @@ export default function SettingsModule({ onSaved }) {
   const stored = loadStoredConfig();
   const [clientId, setClientId] = useState(stored.clientId);
   const [tenantId, setTenantId] = useState(stored.tenantId);
-  const [loginHint, setLoginHint] = useState(stored.loginHint ?? "");  // NEW: elevated UPN for iOS SSO bypass
+  const [loginHint, setLoginHint] = useState(stored.loginHint ?? "");
+  const [abuseIpDbKey, setAbuseIpDbKey] = useState(stored.abuseIpDbKey ?? "");
   const [saved, setSaved] = useState(false);
-  const [showClear, setShowClear] = useState(false);
+  const [showWipe, setShowWipe] = useState(false);
+  const [upgradeStatus, setUpgradeStatus] = useState(null);
 
   const configured = isConfigured();
 
   const handleSave = () => {
     if (!clientId.trim() || !tenantId.trim()) return;
-    saveStoredConfig({ clientId, tenantId, loginHint });  // NEW: pass loginHint through
+    saveStoredConfig({ clientId, tenantId, loginHint, abuseIpDbKey });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
     if (onSaved) onSaved();
   };
 
-  const handleClear = () => {
+  const handleWipe = () => {
     clearStoredConfig();
     setClientId("");
     setTenantId("");
-    setLoginHint("");  // NEW: clear loginHint on wipe
-    setShowClear(false);
-    // Force full page reload to re-init MSAL with no config
+    setLoginHint("");
+    setAbuseIpDbKey("");
+    setShowWipe(false);
     window.location.reload();
+  };
+
+  const handleUpgrade = async () => {
+    if (!("serviceWorker" in navigator)) {
+      setUpgradeStatus("SERVICE WORKER NOT SUPPORTED ON THIS PLATFORM.");
+      return;
+    }
+    setUpgradeStatus("SCANNING FOR UPDATES...");
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) {
+        setUpgradeStatus("NO SERVICE WORKER REGISTERED. TRY REINSTALLING THE PWA.");
+        return;
+      }
+      await reg.update();
+      if (reg.waiting) {
+        setUpgradeStatus("UPDATE FOUND. APPLYING AND RESTARTING...");
+        reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        setTimeout(() => window.location.reload(), 1000);
+      } else if (reg.installing) {
+        setUpgradeStatus("UPDATE ALREADY INSTALLING. STAND BY...");
+      } else {
+        setUpgradeStatus("SYSTEM IS UP TO DATE. NO ACTION REQUIRED.");
+      }
+    } catch (e) {
+      setUpgradeStatus(`UPDATE CHECK FAILED: ${e.message}`);
+    }
   };
 
   const isValid = clientId.trim().length > 0 && tenantId.trim().length > 0;
@@ -203,6 +232,33 @@ export default function SettingsModule({ onSaved }) {
             )}
           </div>
 
+          {/* AbuseIPDB API Key */}
+          <div style={{ marginBottom: 28 }}>
+            <label style={{ display: "block", color: "var(--neon-pink)", fontSize: 11, fontWeight: "bold", letterSpacing: "0.1em", marginBottom: 8 }}>
+              ABUSEIPDB API KEY
+              <span style={{ color: "#555", fontWeight: "normal", marginLeft: 8 }}>(REQUIRED FOR IP RECON MODULE)</span>
+            </label>
+            <input
+              className="cyber-input"
+              style={{ color: "var(--neon-pink)", borderColor: abuseIpDbKey ? "var(--neon-pink)" : "#333", background: "#110005", width: "100%", fontSize: 13, letterSpacing: "0.03em" }}
+              value={abuseIpDbKey}
+              onChange={(e) => { setAbuseIpDbKey(e.target.value); setSaved(false); }}
+              placeholder="paste your AbuseIPDB API key..."
+              spellCheck={false}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+            />
+            <div style={{ color: "#444", fontSize: 11, marginTop: 5 }}>
+              Found at abuseipdb.com → Account → API → Keys. Stored only on this device.
+            </div>
+            {abuseIpDbKey && (
+              <div style={{ marginTop: 8, color: "var(--neon-green)", fontSize: 11 }}>
+                ✓ ABUSEIPDB KEY STORED — IP RECON THREAT INTEL ENABLED
+              </div>
+            )}
+          </div>
+
           {/* Save button */}
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button
@@ -228,61 +284,74 @@ export default function SettingsModule({ onSaved }) {
           </div>
 
           {/* Current status */}
-          <div
-            style={{
-              marginTop: 28,
-              borderTop: "1px solid #222",
-              paddingTop: 20,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 12,
-            }}
-          >
-            <div>
-              <div style={{ color: "#555", fontSize: 10, fontWeight: "bold", marginBottom: 6 }}>
-                CURRENT DEVICE STATUS
-              </div>
-              <div
-                style={{
-                  color: configured ? "var(--neon-green)" : "var(--neon-red)",
-                  fontSize: 13,
-                  fontWeight: "bold",
-                }}
-              >
-                {configured
-                  ? "✓ CREDENTIALS STORED ON DEVICE"
-                  : "✗ NO CREDENTIALS — CONFIGURATION REQUIRED"}
-              </div>
+          <div style={{ marginTop: 28, borderTop: "1px solid #222", paddingTop: 20 }}>
+            <div style={{ color: "#555", fontSize: 10, fontWeight: "bold", marginBottom: 8 }}>
+              CURRENT DEVICE STATUS
+            </div>
+            <div style={{ color: configured ? "var(--neon-green)" : "var(--neon-red)", fontSize: 13, fontWeight: "bold", marginBottom: 24 }}>
+              {configured ? "✓ CREDENTIALS STORED ON DEVICE" : "✗ NO CREDENTIALS — CONFIGURATION REQUIRED"}
             </div>
 
-            {/* Clear / danger zone */}
-            {configured && (
-              <div>
-                {!showClear ? (
-                  <button
-                    className="cyber-btn btn-red"
-                    style={{ fontSize: 11, padding: "7px 14px", opacity: 0.6 }}
-                    onClick={() => setShowClear(true)}
-                  >
-                    [ CLEAR STORED CREDENTIALS ]
-                  </button>
-                ) : (
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span style={{ color: "var(--neon-red)", fontSize: 12 }}>
-                      CONFIRM WIPE?
-                    </span>
-                    <button className="cyber-btn btn-red" style={{ fontSize: 11, padding: "7px 14px" }} onClick={handleClear}>
-                      [ CONFIRM ]
-                    </button>
-                    <button className="cyber-btn btn-cyan" style={{ fontSize: 11, padding: "7px 14px" }} onClick={() => setShowClear(false)}>
-                      [ CANCEL ]
-                    </button>
+            {/* System Actions */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+
+              {/* UPGRADE */}
+              <div style={{ border: "1px solid #333", background: "#050510", padding: 16 }}>
+                <div style={{ color: "var(--neon-cyan)", fontSize: 11, fontWeight: "bold", letterSpacing: "0.1em", marginBottom: 6 }}>
+                  UPGRADE
+                </div>
+                <div style={{ color: "#555", fontSize: 11, marginBottom: 12, lineHeight: 1.5 }}>
+                  Check for a new version of the app and install it immediately.
+                </div>
+                <button
+                  className="cyber-btn btn-cyan"
+                  style={{ width: "100%", fontSize: 12 }}
+                  onClick={handleUpgrade}
+                >
+                  [ CHECK FOR UPDATE ]
+                </button>
+                {upgradeStatus && (
+                  <div style={{ marginTop: 10, color: upgradeStatus.includes("FAILED") || upgradeStatus.includes("NOT") ? "var(--neon-yellow)" : "var(--neon-green)", fontSize: 11, lineHeight: 1.4 }}>
+                    {upgradeStatus}
                   </div>
                 )}
               </div>
-            )}
+
+              {/* FULL WIPE */}
+              <div style={{ border: "1px solid #331111", background: "#0A0000", padding: 16 }}>
+                <div style={{ color: "var(--neon-red)", fontSize: 11, fontWeight: "bold", letterSpacing: "0.1em", marginBottom: 6 }}>
+                  FULL WIPE
+                </div>
+                <div style={{ color: "#555", fontSize: 11, marginBottom: 12, lineHeight: 1.5 }}>
+                  Purge all stored credentials. App returns to first-run state.
+                </div>
+                {!showWipe ? (
+                  <button
+                    className="cyber-btn btn-red"
+                    style={{ width: "100%", fontSize: 12, opacity: configured ? 1 : 0.4 }}
+                    onClick={() => setShowWipe(true)}
+                    disabled={!configured}
+                  >
+                    [ FULL WIPE ]
+                  </button>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ color: "var(--neon-red)", fontSize: 11, fontWeight: "bold" }}>
+                      /!\ CONFIRM WIPE? THIS CANNOT BE UNDONE.
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button className="cyber-btn btn-red" style={{ flex: 1, fontSize: 11 }} onClick={handleWipe}>
+                        [ CONFIRM ]
+                      </button>
+                      <button className="cyber-btn btn-cyan" style={{ flex: 1, fontSize: 11 }} onClick={() => setShowWipe(false)}>
+                        [ CANCEL ]
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
           </div>
         </div>
       </div>

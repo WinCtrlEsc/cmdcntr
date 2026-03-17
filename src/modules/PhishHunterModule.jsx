@@ -84,7 +84,7 @@ export default function PhishHunterModule() {
       </div>
 
       {results && (
-        <div className="reveal-panel" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, minHeight: 0, marginBottom: 12 }}>
+        <div className="reveal-panel" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 0, minHeight: 0, marginBottom: 8 }}>
           {/* Blast radius table */}
           <div style={{ border: "2px solid var(--acid-green)", background: "#051505", padding: 12, boxShadow: "0 0 10px #39FF1455", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
             <div style={{ color: "var(--acid-green)", fontSize: 11, fontWeight: "bold", marginBottom: 10 }}>BLAST RADIUS [RECIPIENTS]</div>
@@ -103,18 +103,18 @@ export default function PhishHunterModule() {
               </table>
             </div>
           </div>
-
-          {/* Tactical actions */}
-          <div style={{ border: "1px solid #33FF6600", background: "#110500", padding: 16, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
-            <div style={{ color: "var(--neon-orange)", fontSize: 13, fontWeight: "bold", marginRight: 4 }}>TACTICAL ACTIONS //</div>
-            <button className="cyber-btn btn-orange" onClick={extractUrls} disabled={!selectedRow}>[ EXTRACT URLs ]</button>
-            <button className="cyber-btn btn-red" onClick={report} disabled={!selectedRow}>[ REPORT MALICIOUS ]</button>
-            <button className="cyber-btn btn-red" onClick={purge} disabled={!selectedRow}>[ PURGE THREAT ]</button>
-          </div>
         </div>
       )}
 
       {!results && <div style={{ flex: 1 }} />}
+
+      {/* Tactical actions — always visible so they're never pushed off-screen */}
+      <div style={{ border: "1px solid #33FF6600", background: "#110500", padding: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", flexShrink: 0, marginBottom: 8 }}>
+        <div style={{ color: "var(--neon-orange)", fontSize: 13, fontWeight: "bold", marginRight: 4 }}>TACTICAL ACTIONS //</div>
+        <button className="cyber-btn btn-orange" onClick={extractUrls} disabled={!selectedRow}>[ EXTRACT URLs ]</button>
+        <button className="cyber-btn btn-red" onClick={report} disabled={!selectedRow}>[ REPORT MALICIOUS ]</button>
+        <button className="cyber-btn btn-red" onClick={purge} disabled={!selectedRow}>[ PURGE THREAT ]</button>
+      </div>
 
       <div className="console-box console-acid" style={{ height: 100 }}>
         {consoleText}<span className="cursor"> _</span>

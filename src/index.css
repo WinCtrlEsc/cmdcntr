@@ -193,6 +193,7 @@ body {
 .nav-btn.blue   { color: var(--neon-blue); }
 .nav-btn.orange { color: var(--neon-orange); }
 .nav-btn.magenta{ color: var(--neon-magenta); }
+.nav-btn.pink   { color: var(--neon-pink); }
 .nav-btn.acid   { color: var(--acid-green); }
 .nav-btn.purple { color: var(--neon-purple); }
 .nav-btn.dim    { color: #777; }
@@ -363,6 +364,7 @@ body {
 .btn-magenta{ color: var(--neon-magenta); }
 .btn-acid   { color: var(--acid-green); }
 .btn-purple { color: var(--neon-purple); }
+.btn-pink   { color: var(--neon-pink); }
 
 /* ── Cyber Input ─────────────────────────────────────── */
 .cyber-input {
@@ -465,6 +467,7 @@ body {
 .console-orange  { color: var(--neon-orange);  border-color: #55FF6600; background: #110500; }
 .console-magenta { color: var(--neon-magenta); border-color: #55E020FF; background: #11001A; }
 .console-acid    { color: var(--acid-green);   border-color: #5539FF14; background: #0A1100; }
+.console-pink    { color: var(--neon-pink);    border-color: #55FF00AA; background: #110008; }
 
 /* ── Reveal Panel ────────────────────────────────────── */
 .reveal-panel {
