@@ -1,34 +1,37 @@
 // IpReconService.js
-// Geo lookup via ipwho.is (free, HTTPS, CORS-enabled, no key required)
+// Geo lookup via ipgeolocation.io v3 (key stored in localStorage)
 // Threat intel via AbuseIPDB v2 API (key stored in localStorage)
 
-import { STORAGE_KEY_ABUSEIPDB } from "../authConfig";
+import { STORAGE_KEY_ABUSEIPDB, STORAGE_KEY_IPGEO } from "../authConfig";
 
 export async function traceIp(ip, log) {
   // ── GEO LOOKUP ──────────────────────────────────────────────────────────────
-  // ipwho.is: free, HTTPS, CORS-enabled, no key required
-  const geoRes = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
+  const ipGeoKey = localStorage.getItem(STORAGE_KEY_IPGEO) ?? "";
+  if (!ipGeoKey) throw new Error("IPGEOLOCATION.IO KEY NOT CONFIGURED — add it in Settings.");
+
+  const geoRes = await fetch(
+    `https://api.ipgeolocation.io/v3/ipgeo?apiKey=${encodeURIComponent(ipGeoKey)}&ip=${encodeURIComponent(ip)}`
+  );
   if (!geoRes.ok) throw new Error(`GEO API error ${geoRes.status}`);
   const geo = await geoRes.json();
-  if (!geo.success) throw new Error(`GEO lookup failed: ${geo.message ?? "unknown error"}`);
 
   log("> GEO DATA ACQUIRED.");
 
-  const ispClean = geo.connection?.isp ?? geo.connection?.org ?? "UNKNOWN";
-  const asnFull  = geo.connection?.asn ? `AS${geo.connection.asn} ${geo.connection.org ?? ""}`.trim() : "UNKNOWN";
+  const org = geo.asn?.organization ?? "UNKNOWN";
+  const asn = geo.asn?.as_number    ?? "UNKNOWN";
 
   const geoData = {
     ip:          geo.ip,
-    country:     geo.country,
-    countryCode: geo.country_code,
-    region:      geo.region,
-    city:        geo.city,
-    lat:         geo.latitude,
-    lon:         geo.longitude,
-    timezone:    geo.timezone?.id ?? "UNKNOWN",
-    isp:         ispClean,
-    org:         geo.connection?.org ?? ispClean,
-    asn:         asnFull,
+    country:     geo.location?.country_name      ?? "UNKNOWN",
+    countryCode: geo.location?.country_code2     ?? "UNKNOWN",
+    region:      geo.location?.state_prov        ?? "UNKNOWN",
+    city:        geo.location?.city              ?? "UNKNOWN",
+    lat:         geo.location?.latitude          ?? "UNKNOWN",
+    lon:         geo.location?.longitude         ?? "UNKNOWN",
+    timezone:    geo.time_zone?.name             ?? "UNKNOWN",
+    isp:         org,
+    org:         org,
+    asn:         asn,
   };
 
   // ── ABUSEIPDB THREAT INTEL ───────────────────────────────────────────────────

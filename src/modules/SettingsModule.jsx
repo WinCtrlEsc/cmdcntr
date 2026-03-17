@@ -16,6 +16,7 @@ export default function SettingsModule({ onSaved }) {
   const [tenantId, setTenantId] = useState(stored.tenantId);
   const [loginHint, setLoginHint] = useState(stored.loginHint ?? "");
   const [abuseIpDbKey, setAbuseIpDbKey] = useState(stored.abuseIpDbKey ?? "");
+  const [ipGeoKey, setIpGeoKey] = useState(stored.ipGeoKey ?? "");
   const [saved, setSaved] = useState(false);
   const [showWipe, setShowWipe] = useState(false);
   const [upgradeStatus, setUpgradeStatus] = useState(null);
@@ -24,7 +25,7 @@ export default function SettingsModule({ onSaved }) {
 
   const handleSave = () => {
     if (!clientId.trim() || !tenantId.trim()) return;
-    saveStoredConfig({ clientId, tenantId, loginHint, abuseIpDbKey });
+    saveStoredConfig({ clientId, tenantId, loginHint, abuseIpDbKey, ipGeoKey });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
     if (onSaved) onSaved();
@@ -36,6 +37,7 @@ export default function SettingsModule({ onSaved }) {
     setTenantId("");
     setLoginHint("");
     setAbuseIpDbKey("");
+    setIpGeoKey("");
     setShowWipe(false);
     window.location.reload();
   };
@@ -230,6 +232,33 @@ export default function SettingsModule({ onSaved }) {
             {loginHint && (
               <div style={{ marginTop: 8, color: "var(--neon-green)", fontSize: 11 }}>
                 ✓ iOS SSO OVERRIDE ACTIVE — will authenticate as: {loginHint}
+              </div>
+            )}
+          </div>
+
+          {/* IPGeolocation.io API Key */}
+          <div style={{ marginBottom: 28 }}>
+            <label style={{ display: "block", color: "var(--neon-pink)", fontSize: 11, fontWeight: "bold", letterSpacing: "0.1em", marginBottom: 8 }}>
+              IPGEOLOCATION.IO API KEY
+              <span style={{ color: "#555", fontWeight: "normal", marginLeft: 8 }}>(REQUIRED FOR IP RECON MODULE)</span>
+            </label>
+            <input
+              className="cyber-input"
+              style={{ color: "var(--neon-pink)", borderColor: ipGeoKey ? "var(--neon-pink)" : "#333", background: "#110005", width: "100%", fontSize: 13, letterSpacing: "0.03em" }}
+              value={ipGeoKey}
+              onChange={(e) => { setIpGeoKey(e.target.value); setSaved(false); }}
+              placeholder="paste your ipgeolocation.io API key..."
+              spellCheck={false}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+            />
+            <div style={{ color: "#444", fontSize: 11, marginTop: 5 }}>
+              Found at ipgeolocation.io → Dashboard → API Keys. Stored only on this device.
+            </div>
+            {ipGeoKey && (
+              <div style={{ marginTop: 8, color: "var(--neon-green)", fontSize: 11 }}>
+                ✓ IPGEOLOCATION KEY STORED — GEO LOOKUP ENABLED
               </div>
             )}
           </div>
